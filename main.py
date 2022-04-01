@@ -8,35 +8,9 @@ Supports any board configuration within the range 2x2-99x99. However, larger boa
 from board import Board
 from player import HumanPlayer, AIPlayer
 
-import typing
-import curses
-import _thread
+from typing import *
 
 from os import system
-
-
-y = 0
-
-
-def print(screen, string, add_line=True, color=None):
-	global y
-	if color is None:
-		screen.addstr(y, 0, string)
-	else:
-		screen.addstr(y, 0, string, color)
-	screen.refresh()
-	
-	if add_line:
-		y += len(string.splitlines())
-
-
-def get_input(screen, prompt):
-	global y
-	curses.echo()
-	screen.addstr(y, 0, prompt)
-	screen.refresh()
-	y += 3
-	return screen.getstr(y + 1, 0, 1)
 
 
 class PLAYER:
@@ -44,42 +18,101 @@ class PLAYER:
 
 
 class Game:
-	def __init__(self, size: typing.List[int]=(6, 7), connect_size: int=4):
-		self.board = Board(size, connect_size)
-		self.players = [HumanPlayer(1, self.board)]
-		self.size = size
-		self.connect_size = connect_size
+	def __init__(self, size: List[int]=(6, 7), connect_size: int=4):
+		self.board: Board = Board(size, connect_size)
+		self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self.board)]
+		self.size: List[int] = size
+		self.connect_size: int = connect_size
 
-	def start(self, screen):
-
-		def prompt_mode(clear=True):
-			print(screen, "_________                                    _____     __________", color=curses.color_pair(1))
-			print(screen, "__  ____/______ _______ _______ _____ _________  /_    ___  ____/______ ____  __________", color=curses.color_pair(1) | curses.A_DIM)
-			print(screen, "_  /     _  __ \__  __ \__  __ \_  _ \_  ___/_  __/    __  /_    _  __ \_  / / /__  ___/", color=curses.color_pair(1))
-			print(screen, "/ /___   / /_/ /_  / / /_  / / //  __// /__  / /_      _  __/    / /_/ // /_/ / _  /", color=curses.color_pair(1) | curses.A_DIM)
-			print(screen, "\____/   \____/ /_/ /_/ /_/ /_/ \___/ \___/  \__/      /_/       \____/ \____/  /_/", color=curses.color_pair(1))
+	def start(self):
+		def prompt_mode(invalid=False):
+			system("clear")
+			print("""\033[96m_________                                    _____     __________
+\033[34m__  ____/______ _______ _______ _____ _________  /_    ___  ____/______ ____  __________
+\033[96m_  /     _  __ \__  __ \__  __ \_  _ \_  ___/_  __/    __  /_    _  __ \_  / / /__  ___/
+\033[34m/ /___   / /_/ /_  / / /_  / / //  __// /__  / /_      _  __/    / /_/ // /_/ / _  /
+\033[96m\____/   \____/ /_/ /_/ /_/ /_/ \___/ \___/  \__/      /_/       \____/ \____/  /_/\033[0m""")  # speed
 			
-			mode = get_input(screen, "Enter the mode, or 'h' for the help menu")
-			print(screen, str(mode.lower() == "h"))
-			if mode.lower() in ["c", "computer"]:
+			result = input(f"\nEnter the mode, or 'h' for the help menu\n\033[91m{'[Invalid input] ' if invalid else ''}\033[0m> ")
+			if result.lower() in ["c", "computer"]:
 				return PLAYER.Computer
-			elif mode.lower() in ["f", "friend"]:
+			elif result.lower() in ["f", "friend"]:
 				return PLAYER.Human
-			elif mode.lower() in ["h", "help"]:
-				return help
+			elif result.lower() in ["h", "help"]:
+				return
 			else:
-				return prompt_mode()
+				return prompt_mode(True)
 
-		mode = prompt_mode(False)
+		mode = prompt_mode()
 		if mode == PLAYER.Computer:
 			self.players.append(AIPlayer(2, self.board))
 		elif mode == PLAYER.Human:
 			self.players.append(HumanPlayer(2, self.board))
 		else:
-			screen.clear()
-			print(screen, "HELP MENU")
-			input()
-			return self.start(screen)
+			system("clear")
+			print("""\033[96m______  __      ______                ______  ___
+\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
+\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
+\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
+\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
+\033[34m                      /_/\033[0m
+
+\033[94mIntroduction\033[0m
+Connect Four is a game where two players, one yellow and one red, take turns dropping their colored pieces into one of the grid's columns.
+Upon dropping, the piece is automatically placed in the last empty space in the column, from top to bottom.
+When four of either player's own discs form a horizontal, vertical, or diagonal line, that player wins.
+""")
+			if input("[Press Enter to continue, or 'q' to quit] > ").lower() in ["q", "quit"]:
+				return self.start()
+			system("clear")
+			print("""\033[96m______  __      ______                ______  ___
+\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
+\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
+\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
+\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
+\033[34m                      /_/\033[0m
+
+\033[94mHow to start playing\033[0m
+To start playing, you must first select a mode.
+On the main screen, enter 'c' to play against the computer, or 'f' to play against a friend.
+After selecting a mode, the game will automatically start, and the starting board will be printed.
+""")
+			if input("[Press Enter to continue, or 'q' to quit] > ").lower() in ["q", "quit"]:
+				return self.start()
+			system("clear")
+			print("""\033[96m______  __      ______                ______  ___
+\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
+\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
+\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
+\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
+\033[34m                      /_/\033[0m
+
+\033[94mMaking a move\033[0m
+To make a move, type in the column number (shown on the board) you wish to drop your piece in.
+After pressing enter, the your piece will be automatically placed in the given column.
+
+To undo a move, enter 'u' on your opponent's turn.
+If the game has ended, you cannot undo any moves.
+""")
+			if input("[Press Enter to continue, or 'q' to quit] > ").lower() in ["q", "quit"]:
+				return self.start()
+			system("clear")
+			print("""\033[96m______  __      ______                ______  ___
+\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
+\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
+\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
+\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
+\033[34m                      /_/\033[0m
+
+\033[94mCustomizing the board\033[0m
+To change the size of the board and the number of discs that must be connected to win, enter 's' for the settings menu on the main screen.
+Then, enter the setting ('s' for size of board, and 'n' ofr number of discs to win) you wish to change, and enter the new value for the setting.
+For changing the size of the board, the new value should by in the format 'axb', where 'a' and 'b' are integers within the inclusive range of 2-99.
+For changing the number of discs to win, the new value should be an integer larger or equal to 2, but smaller or equal to the board \033[1mwidth\033[0m.
+""")
+			input("[Press Enter for the main menu] > ")
+			return self.start()
+
 		while True:
 			system("clear")
 			print(self.board.visualize_board())
@@ -87,28 +120,8 @@ class Game:
 			pass
 
 
-def main(screen):
-	curses.curs_set(0)
-	curses.mousemask(1)
-
-	curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-
-	def listen(screen):
-		while True:
-			screen.refresh()
-			key = screen.getch()
-			if key == curses.KEY_MOUSE:
-				_, x, y, _, _ = curses.getmouse()
-				# print(screen, f"{x} {y}")
-				print(screen, "ahsdbh")
-				# screen.addstr(1, 0, get_input(screen, 1, 0, "HI:"))
-	
-	game = Game()
-	_thread.start_new_thread(listen, (screen,))
-	game.start(screen)
-
-
-curses.wrapper(main)
+game = Game()
+game.start()
 
 
 # size of the board, connect n
