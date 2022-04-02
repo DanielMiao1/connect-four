@@ -2,11 +2,15 @@
 
 """
 Connect Four Game
-Supports any board configuration within the range 2x2-99x99. However, larger boards may not fit on the screen, and replit xterm unicode rendering errors may occur more frequently on larger boards.
+Supports any board configuration within the range 2x2-99x99. However, larger boards may not fit on the screen.
 """
+import re
 
 from board import Board
 from player import HumanPlayer, AIPlayer
+from settings import board_size, connect_length, settings_menu
+
+import help_menu
 
 from typing import *
 
@@ -18,7 +22,7 @@ class PLAYER:
 
 
 class Game:
-	def __init__(self, size: List[int]=(6, 7), connect_size: int=4):
+	def __init__(self, size: List[int]=board_size, connect_size: int=connect_length):
 		self.board: Board = Board(size, connect_size)
 		self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self.board)]
 		self.size: List[int] = size
@@ -39,89 +43,49 @@ class Game:
 			elif result.lower() in ["f", "friend"]:
 				return PLAYER.Human
 			elif result.lower() in ["h", "help"]:
-				return
+				return "h"
+			elif result.lower() in ["s", "settings"]:
+				return "s"
 			else:
 				return prompt_mode(True)
 
 		mode = prompt_mode()
+		print(mode)
 		if mode == PLAYER.Computer:
 			self.players.append(AIPlayer(2, self.board))
 		elif mode == PLAYER.Human:
 			self.players.append(HumanPlayer(2, self.board))
+		elif mode == "h":
+			help_menu.help_menu()
+			return self.start()
 		else:
-			system("clear")
-			print("""\033[96m______  __      ______                ______  ___
-\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
-\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
-\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
-\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
-\033[34m                      /_/\033[0m
-
-\033[94mIntroduction\033[0m
-Connect Four is a game where two players, one yellow and one red, take turns dropping their colored pieces into one of the grid's columns.
-Upon dropping, the piece is automatically placed in the last empty space in the column, from top to bottom.
-When four of either player's own discs form a horizontal, vertical, or diagonal line, that player wins.
-""")
-			if input("[Press Enter to continue, or 'q' to quit] > ").lower() in ["q", "quit"]:
-				return self.start()
-			system("clear")
-			print("""\033[96m______  __      ______                ______  ___
-\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
-\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
-\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
-\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
-\033[34m                      /_/\033[0m
-
-\033[94mHow to start playing\033[0m
-To start playing, you must first select a mode.
-On the main screen, enter 'c' to play against the computer, or 'f' to play against a friend.
-After selecting a mode, the game will automatically start, and the starting board will be printed.
-""")
-			if input("[Press Enter to continue, or 'q' to quit] > ").lower() in ["q", "quit"]:
-				return self.start()
-			system("clear")
-			print("""\033[96m______  __      ______                ______  ___
-\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
-\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
-\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
-\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
-\033[34m                      /_/\033[0m
-
-\033[94mMaking a move\033[0m
-To make a move, type in the column number (shown on the board) you wish to drop your piece in.
-After pressing enter, the your piece will be automatically placed in the given column.
-
-To undo a move, enter 'u' on your opponent's turn.
-If the game has ended, you cannot undo any moves.
-""")
-			if input("[Press Enter to continue, or 'q' to quit] > ").lower() in ["q", "quit"]:
-				return self.start()
-			system("clear")
-			print("""\033[96m______  __      ______                ______  ___
-\033[34m___  / / /_____ ___  /________        ___   |/  /_____ _______ ____  __
-\033[96m__  /_/ / _  _ \__  / ___  __ \       __  /|_/ / _  _ \__  __ \_  / / /
-\033[34m_  __  /  /  __/_  /  __  /_/ /       _  /  / /  /  __/_  / / // /_/ /
-\033[96m/_/ /_/   \___/ /_/   _  ____/        /_/  /_/   \___/ /_/ /_/ \____/
-\033[34m                      /_/\033[0m
-
-\033[94mCustomizing the board\033[0m
-To change the size of the board and the number of discs that must be connected to win, enter 's' for the settings menu on the main screen.
-Then, enter the setting ('s' for size of board, and 'n' ofr number of discs to win) you wish to change, and enter the new value for the setting.
-For changing the size of the board, the new value should by in the format 'axb', where 'a' and 'b' are integers within the inclusive range of 2-99.
-For changing the number of discs to win, the new value should be an integer larger or equal to 2, but smaller or equal to the board \033[1mwidth\033[0m.
-""")
-			input("[Press Enter for the main menu] > ")
+			settings_menu()
 			return self.start()
 
-		while True:
+		while not self.board.is_game_over():
 			system("clear")
 			print(self.board.visualize_board())
-			input()
-			pass
+			print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
+			move = self.players[self.board.turn - 1].get_player_move()
+			while not move:
+				system("clear")
+				print(self.board.visualize_board())
+				print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
+				move = self.players[self.board.turn - 1].get_player_move(True)
+			if move == "u":
+				self.board.undo()
+				continue
+			self.board.place_move(move)
+		system("clear")
+		print(self.board.visualize_board())
+		print(f"{('Yellow', 'Red')[self.board.turn - 1]} wins")
 
 
-game = Game()
-game.start()
+try:
+	game = Game()
+	game.start()
+except KeyboardInterrupt:
+	exit("")
 
 
 # size of the board, connect n
