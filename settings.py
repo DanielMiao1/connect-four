@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from os import system
 
+
 import re
 import time
+
 
 board_size = (6, 7)
 connect_length = 4
@@ -46,11 +48,11 @@ Enter the setting you wish to change, or 'q' to quit:""")  # slant
 \033[34m                                        /____/\033[0m
 
 Enter the new value for the setting, or 'q' to quit:""")
-		prompt = input(f"{'[Invalid input] ' if invalid else ''}> ")
+		prompt = input(f"\033[91m{'[Invalid input] ' if invalid else ''}\033[0m> ")
 		if prompt.lower() in ["q", "quit"]:
 			return "q"
 		elif setting == "s":
-			if re.match(r"^([2-9]|[1-9]{2})x([2-9]|[1-9]{2})$", prompt) is not None:
+			if re.match(r"^([2-9]|[1-9]{2}|([1-9]0))x([2-9]|[1-9]{2}|([1-9]0))$", prompt) is not None:
 				global board_size
 				board_size = (int(prompt.split("x")[0]), int(prompt.split("x")[1]))
 				print(f"\033[92mBoard size is now set to {board_size[0]}x{board_size[1]}\033[0m\nReturning to main menu in 1500ms")
@@ -71,4 +73,6 @@ Enter the new value for the setting, or 'q' to quit:""")
 			return prompt_setting_value(True)
 	
 	value = prompt_setting_value()
-	return
+	if value == "q":
+		return
+	return setting, value

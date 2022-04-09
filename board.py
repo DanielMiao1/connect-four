@@ -73,12 +73,14 @@ class Board:
 				if len(set(self.board[row + x][square] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
 					return True
 		# Check diagonal lines
-		for index in range(len(self.board) - self.connect_size + 1):
-			if self.board[index:index + self.connect_size].count(self.turn) == self.connect_size and self.board[index][index] != 0:
-				return True
-		for index in range(len(self.board) - 1, self.connect_size - 1, -1):
-			if self.board[index:index + self.connect_size].count(self.turn) == self.connect_size and self.board[index][index] != 0:
-				return True
+		for row in range(len(self.board) - self.connect_size + 1):
+			for square in range(len(self.board[row]) - self.connect_size + 1):
+				if len(set(self.board[row + x][square + x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
+					return True
+			for square in range(self.connect_size - 1, len(self.board[row])):
+				if len(set(self.board[row + x][square - x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
+					return True
+		
 		return False
 
 	def is_game_over(self):
@@ -92,7 +94,15 @@ class Board:
 				else:
 					return False
 		return False
-		
+	
+	def is_tie(self):
+		"""Returns True if the game is tied, False otherwise."""
+		for column in self.board:
+			for square in column:
+				if not square:
+					return False
+		return True
+
 	def is_column_valid(self, col):
 		"""Returns True if the column is valid, False otherwise."""
 		if col < 1 or col > len(self.board):
@@ -121,7 +131,7 @@ class Board:
 				self.moves.append(col - 1)
 				break
 
-	def moves(self):
+	def legal_moves(self):
 		"""Returns a list of all possible moves in the current position."""
 		moves = []
 		for column_index in range(len(self.board)):
@@ -129,3 +139,34 @@ class Board:
 				if not square:
 					moves.append(column_index)
 		return moves
+
+	def evaluate(self):
+		"""Returns the absolute evaluation of the position"""
+		if self.has_player_won():
+			return self.turn * 2 - 3
+		if self.is_tie():
+			return 0
+		return (self.get_three_in_a_row(1) / 2) - (self.get_three_in_a_row(2) / 2)
+
+	def get_three_in_a_row(self, player):
+		"""Returns the number of three in a rows for the given player."""
+		result = 0
+		# Check vertical lines
+		for column in self.board:
+			for square in range(len(column) - self.connect_size - 1):
+				if len(set(column[square:square + self.connect_size - 1])) == 1 and column[square] == player:
+					result += 1
+		# Check horizontal lines
+		for row in range(len(self.board) - self.connect_size - 1):
+			for square in range(len(self.board[row])):
+				if len(set(self.board[row + x][square] for x in range(self.connect_size - 1))) == 1 and self.board[row][square] == player:
+					result += 1
+		# Check diagonal lines
+		for row in range(len(self.board) - self.connect_size - 1):
+			for square in range(len(self.board[row]) - self.connect_size - 1):
+				if len(set(self.board[row + x][square + x] for x in range(self.connect_size - 1))) == 1 and self.board[row][square] == player:
+					result += 1
+			for square in range(self.connect_size - 2, len(self.board[row])):
+				if len(set(self.board[row + x][square - x] for x in range(self.connect_size - 1))) == 1 and self.board[row][square] == player:
+					result += 1
+		return result

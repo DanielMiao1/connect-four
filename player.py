@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import time
 import random
+
 from typing import *
+
+from board import Board
 
 
 class Player:
-	def __init__(self, color: int, board: object) -> None:
+	def __init__(self, color: int, board: Board) -> None:
 		self.color = color
 		self.board = board
 
@@ -30,10 +32,29 @@ class HumanPlayer(Player):
 	
 
 class AIPlayer(Player):
-	# everything here is temporary
 	def get_player_move(self):
-		time.sleep(2 + random.uniform(0, 1))
-		return self.minimax()
+		result = self.minimax(2, self.color)[0]
+		if result is None:
+			return random.choice(self.board.legal_moves()) + 1
+		return result
+	
+	def minimax(self, depth, player, maximizing=True):
+		move = None
 
-	def minimax(self, *_: Any):
-		return random.choice(self.board.moves())
+		if depth == 0:
+			return move, self.board.evaluate()
+		elif self.board.is_game_over():
+			return move, self.board.evaluate()
+		
+		base = -2 if maximizing else 2
+		for i in self.board.legal_moves():
+			self.board.place_move(i + 1)
+			_, evaluation = self.minimax(depth - 1, player, not maximizing)
+			self.board.undo()
+			if (maximizing and base < evaluation) or (not maximizing and base > evaluation):
+				base = evaluation
+				move = i + 1
+		return move, base
+
+
+# empty spaces
