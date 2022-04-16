@@ -140,33 +140,39 @@ class Board:
 					moves.append(column_index)
 		return moves
 
-	def evaluate(self):
-		"""Returns the absolute evaluation of the position"""
+	def evaluate(self, player):
+		"""Returns the evaluation of the position"""
 		if self.has_player_won():
-			return self.turn * 2 - 3
+			if self.turn == player:
+				return float("inf")
+			return float("-inf")
 		if self.is_tie():
 			return 0
-		return (self.get_three_in_a_row(1) / 2) - (self.get_three_in_a_row(2) / 2)
+		result = 0
+		for i in range(1, self.connect_size):
+			result += i * self.get_n_in_a_row(player, i)
+		return result
 
-	def get_three_in_a_row(self, player):
-		"""Returns the number of three in a rows for the given player."""
+	def get_n_in_a_row(self, player, n):
+		"""Returns the number of n-in-a-rows for the given player."""
 		result = 0
 		# Check vertical lines
 		for column in self.board:
-			for square in range(len(column) - self.connect_size - 1):
-				if len(set(column[square:square + self.connect_size - 1])) == 1 and column[square] == player:
+			for square in range(len(column) - n + 1):
+				if len(set(column[square:square + n])) == 1 and column[square] == player:
 					result += 1
 		# Check horizontal lines
-		for row in range(len(self.board) - self.connect_size - 1):
+		for row in range(len(self.board) - n + 1):
 			for square in range(len(self.board[row])):
-				if len(set(self.board[row + x][square] for x in range(self.connect_size - 1))) == 1 and self.board[row][square] == player:
+				if len(set(self.board[row + x][square] for x in range(n))) == 1 and self.board[row][square] == player:
 					result += 1
 		# Check diagonal lines
-		for row in range(len(self.board) - self.connect_size - 1):
-			for square in range(len(self.board[row]) - self.connect_size - 1):
-				if len(set(self.board[row + x][square + x] for x in range(self.connect_size - 1))) == 1 and self.board[row][square] == player:
+		for row in range(len(self.board) - n + 1):
+			for square in range(len(self.board[row]) - n + 1):
+				if len(set(self.board[row + x][square + x] for x in range(n))) == 1 and self.board[row][square] == player:
 					result += 1
-			for square in range(self.connect_size - 2, len(self.board[row])):
-				if len(set(self.board[row + x][square - x] for x in range(self.connect_size - 1))) == 1 and self.board[row][square] == player:
+			for square in range(n - 1, len(self.board[row])):
+				if len(set(self.board[row + x][square - x] for x in range(n))) == 1 and self.board[row][square] == player:
 					result += 1
+		
 		return result

@@ -42,11 +42,11 @@ class AIPlayer(Player):
 		move = None
 
 		if depth == 0:
-			return move, self.board.evaluate()
+			return move, self.board.evaluate(player)
 		elif self.board.is_game_over():
-			return move, self.board.evaluate()
+			return move, self.board.evaluate(player)
 		
-		base = -2 if maximizing else 2
+		base = float("-inf") if maximizing else float("inf")
 		for i in self.board.legal_moves():
 			self.board.place_move(i + 1)
 			_, evaluation = self.minimax(depth - 1, player, not maximizing)
@@ -55,6 +55,9 @@ class AIPlayer(Player):
 				base = evaluation
 				move = i + 1
 		return move, base
+
+	# 1000000 if player won
+	# 100 * (# 3 in a row) + 10 * (# 2 in a row)
 
 
 # empty spaces
