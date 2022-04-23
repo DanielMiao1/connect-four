@@ -62,26 +62,27 @@ class Board:
 
 	def has_player_won(self):
 		"""Returns True if the player has won, False otherwise."""
-		# Check vertical lines
-		for column in self.board:
-			for square in range(len(column) - self.connect_size + 1):
-				if len(set(column[square:square + self.connect_size])) == 1 and column[square] != 0:
-					return True
-		# Check horizontal lines
-		for row in range(len(self.board) - self.connect_size + 1):
-			for square in range(len(self.board[row])):
-				if len(set(self.board[row + x][square] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
-					return True
-		# Check diagonal lines
-		for row in range(len(self.board) - self.connect_size + 1):
-			for square in range(len(self.board[row]) - self.connect_size + 1):
-				if len(set(self.board[row + x][square + x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
-					return True
-			for square in range(self.connect_size - 1, len(self.board[row])):
-				if len(set(self.board[row + x][square - x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
-					return True
+		return any([self.get_n_in_a_row(n, self.connect_size) for n in [1, 2]])
+		# # Check vertical lines
+		# for column in self.board:
+		# 	for square in range(len(column) - self.connect_size + 1):
+		# 		if len(set(column[square:square + self.connect_size])) == 1 and column[square] != 0:
+		# 			return True
+		# # Check horizontal lines
+		# for row in range(len(self.board) - self.connect_size + 1):
+		# 	for square in range(len(self.board[row])):
+		# 		if len(set(self.board[row + x][square] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
+		# 			return True
+		# # Check diagonal lines
+		# for row in range(len(self.board) - self.connect_size + 1):
+		# 	for square in range(len(self.board[row]) - self.connect_size + 1):
+		# 		if len(set(self.board[row + x][square + x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
+		# 			return True
+		# 	for square in range(self.connect_size - 1, len(self.board[row])):
+		# 		if len(set(self.board[row + x][square - x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
+		# 			return True
 		
-		return False
+		# return False
 
 	def is_game_over(self):
 		"""Returns True if the game is over, False otherwise."""
@@ -140,32 +141,37 @@ class Board:
 					moves.append(column_index)
 		return moves
 
-	def evaluate(self, player):
-		"""Returns the evaluation of the position"""
+	def evaluate(self):
+		"""Returns the evaluation of the position
+		Positive values indicate advantage for player 1, negative values favor player 2
+		"""
+		return 0
+		# if player 1 won, return inf, if player 2 won, return -inf
 		if self.has_player_won():
-			if self.turn == player:
-				return float("inf")
-			return float("-inf")
+			return -1 *((-1) ** self.turn) * float("inf")
 		if self.is_tie():
 			return 0
 		result = 0
-		for i in range(1, self.connect_size):
-			result += i * self.get_n_in_a_row(player, i)
+		for i in range(2, self.connect_size):
+			result += i * self.get_n_in_a_row(1, i)
+			result -= i * self.get_n_in_a_row(2, i)
 		return result
 
 	def get_n_in_a_row(self, player, n):
 		"""Returns the number of n-in-a-rows for the given player."""
 		result = 0
 		# Check vertical lines
-		for column in self.board:
+		for column in self.board:	
 			for square in range(len(column) - n + 1):
 				if len(set(column[square:square + n])) == 1 and column[square] == player:
 					result += 1
+
 		# Check horizontal lines
 		for row in range(len(self.board) - n + 1):
 			for square in range(len(self.board[row])):
 				if len(set(self.board[row + x][square] for x in range(n))) == 1 and self.board[row][square] == player:
 					result += 1
+					
 		# Check diagonal lines
 		for row in range(len(self.board) - n + 1):
 			for square in range(len(self.board[row]) - n + 1):

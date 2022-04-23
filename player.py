@@ -2,6 +2,8 @@
 
 import random
 
+import time
+
 from typing import *
 
 from board import Board
@@ -15,6 +17,15 @@ class Player:
 	def get_player_move(self, invalid: bool = False) -> Union[int, Literal["u"]]:
 		try:
 			column = input(f"[%s] > " % ("\033[91mInvalid input\033[0m" if invalid else "Enter your move"))
+			if column.lower().startswith("row"):
+				# row player_number n
+				print(self.board.get_n_in_a_row(int(column.split()[1]), int(column.split()[2])))
+				time.sleep(3)
+				return False
+			if column.startswith("e"):
+				print(self.board.evaluate())
+				time.sleep(1.5)
+				return False
 			if column.lower() in ["u", "undo"]:
 				return "u"
 			column = int(column)
@@ -33,18 +44,18 @@ class HumanPlayer(Player):
 
 class AIPlayer(Player):
 	def get_player_move(self):
-		result = self.minimax(2, self.color)[0]
+		result = self.minimax(3, self.color)[0]
 		if result is None:
 			return random.choice(self.board.legal_moves()) + 1
 		return result
 	
-	def minimax(self, depth, player, maximizing=True):
+	def minimax(self, depth: int, player: int, maximizing: bool=True) -> tuple:
 		move = None
 
 		if depth == 0:
-			return move, self.board.evaluate(player)
+			return move, self.board.evaluate()
 		elif self.board.is_game_over():
-			return move, self.board.evaluate(player)
+			return move, self.board.evaluate()
 		
 		base = float("-inf") if maximizing else float("inf")
 		for i in self.board.legal_moves():
@@ -56,8 +67,10 @@ class AIPlayer(Player):
 				move = i + 1
 		return move, base
 
-	# 1000000 if player won
-	# 100 * (# 3 in a row) + 10 * (# 2 in a row)
 
+
+	# inf if red won, negative inf if yellow won
+
+	# 3 * (# of 3 red in a row) 2 * (# of 2 red in a row) - [3 * (# of 3 yellow in a row) 2 * (# of 2 yellow in a row)]
 
 # empty spaces
