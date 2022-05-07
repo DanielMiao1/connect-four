@@ -6,7 +6,7 @@ import typing
 VALUES = ["    ", "\033[31m ◉  \033[0m", "\033[93m ◉  \033[0m"]
 
 
-class Board:
+class Game:
 	"""The grid."""
 	def __init__(self, size: typing.List[int], connect_size: int):
 		self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
@@ -63,26 +63,6 @@ class Board:
 	def has_player_won(self):
 		"""Returns True if the player has won, False otherwise."""
 		return any([self.get_n_in_a_row(player_number, self.connect_size) for player_number in [1, 2]])
-		# # Check vertical lines
-		# for column in self.board:
-		# 	for square in range(len(column) - self.connect_size + 1):
-		# 		if len(set(column[square:square + self.connect_size])) == 1 and column[square] != 0:
-		# 			return True
-		# # Check horizontal lines
-		# for row in range(len(self.board) - self.connect_size + 1):
-		# 	for square in range(len(self.board[row])):
-		# 		if len(set(self.board[row + x][square] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
-		# 			return True
-		# # Check diagonal lines
-		# for row in range(len(self.board) - self.connect_size + 1):
-		# 	for square in range(len(self.board[row]) - self.connect_size + 1):
-		# 		if len(set(self.board[row + x][square + x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
-		# 			return True
-		# 	for square in range(self.connect_size - 1, len(self.board[row])):
-		# 		if len(set(self.board[row + x][square - x] for x in range(self.connect_size))) == 1 and self.board[row][square] != 0:
-		# 			return True
-		
-		# return False
 
 	def is_game_over(self):
 		"""Returns True if the game is over, False otherwise."""
@@ -126,20 +106,21 @@ class Board:
 				self.moves.append(col - 1)
 				break	
 
-	def evaluate(self):
-		"""Returns the evaluation of the position
-		Positive values indicate advantage for player 1, negative values favor player 2
+	def evaluate(self, player: int):
 		"""
-		return 0
+		Returns the evaluation of the position
+		Positive values indicate advantage for given player
+		"""
+		# return 0
 		# if player 1 won, return inf, if player 2 won, return -inf
 		if self.has_player_won():
-			return -1 * ((-1) ** self.turn) * float("inf")
+			return (self.turn == player) * float("inf")
 		if self.is_tie():
 			return 0
 		result = 0
 		for i in range(2, self.connect_size):
-			result += i * self.get_n_in_a_row(1, i)
-			result -= i * self.get_n_in_a_row(2, i)
+			result += i * self.get_n_in_a_row(player, i)
+			result -= i * self.get_n_in_a_row(3 - player, i)
 		return result
 
 	def get_n_in_a_row(self, player, n):
@@ -167,3 +148,36 @@ class Board:
 					result += 1
 		
 		return result
+
+	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool=True, alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")) -> tuple:
+		# previous player won the game
+		if self.has_player_won():
+			return None, self.evaluate(not maximizing)
+		elif self.is_tie():
+			return None, 0
+		elif depth == 0:
+			return None, self.evaluate(maximizing)
+			
+		
+		best_evaluation: typing.Union[int, float] = float("-inf") if maximizing else float("inf")
+		best_move: typing.Union[None, typing.List[int, int]] = None
+
+		for i in self.legal_moves():
+			self.place_move(i)
+			_, evaluation = self.minimax_algorithm(depth - 1, player, not maximizing, alpha, beta)
+			self.undo()
+
+			# update the evaluation and best move if needed
+			if (maximizing and evaluation > best_evaluation) or (not maximizing and evaluation < best_evaluation):
+				best_evaluation = evaluation
+				best_move = i
+			if maximizing:
+				if evaluation > beta:
+					continue
+				alpha = max(evaluation, alpha)
+			else:
+				if evaluation < alpha:
+					continue
+				beta = min(evaluation, beta)
+
+		return best_move, best_evaluation

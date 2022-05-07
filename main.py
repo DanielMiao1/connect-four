@@ -5,13 +5,13 @@ Connect Four Game
 Supports any board configuration within the range 2x2-99x99. However, larger boards may not fit on the screen.
 """
 
-from board import Board
+from connect4 import Game as Connect4
 from player import HumanPlayer, AIPlayer
 from settings import board_size, connect_length, settings_menu
 
 import help_menu
 
-from typing import *
+from typing import List, Union
 
 from os import system
 
@@ -22,7 +22,7 @@ class PLAYER:
 
 class Game:
 	def __init__(self, size: List[int]=board_size, connect_size: int=connect_length):
-		self.board: Board = Board(size, connect_size)
+		self.board: Connect4 = Connect4(size, connect_size)
 		self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self.board)]
 		self.size: List[int] = size
 		self.connect_size: int = connect_size
@@ -66,7 +66,7 @@ class Game:
 				elif result[0] == "c":
 					global connect_length
 					connect_length = int(result[1])
-				self.board: Board = Board(board_size, connect_length)
+				self.board: Connect4 = Connect4(board_size, connect_length)
 				self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self.board)]
 				self.size: List[int] = board_size
 				self.connect_size: int = connect_length
