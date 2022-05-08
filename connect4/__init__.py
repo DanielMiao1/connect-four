@@ -82,29 +82,31 @@ class Game:
 		"""Returns a list of all possible moves in the current position."""
 		moves = []
 		for column_index in range(len(self.board)):
-			for square in self.board[column_index]:
-				if not square:
-					moves.append(column_index + 1)
+			if not self.board[column_index][0]:
+				moves.append(column_index + 1)
 		return moves
 	
-	def undo(self):
+	def undo(self, row=None):
 		if not self.moves:
 			return
-		for square_index in range(len(self.board[self.moves[-1]])):
-			if self.board[self.moves[-1]][square_index]:
-				self.board[self.moves[-1]][square_index] = 0
-				break
+		if row is None:
+			for square_index in range(len(self.board[self.moves[-1]])):
+				if self.board[self.moves[-1]][square_index]:
+					self.board[self.moves[-1]][square_index] = 0
+					break
+		else:
+			self.board[self.moves[-1]][row] = 0
 		self.turn = 3 - self.turn
 		self.moves.pop()
 	
 	def place_move(self, col):
 		"""Finds the first empty square in the column and places the move there."""
-		for i in range(len(self.board[col - 1]))[::-1]:
+		for i in range(len(self.board[col - 1]) - 1, 0, -1):
 			if not self.board[col - 1][i]:
 				self.board[col - 1][i] = self.turn
-				self.turn = 3 - self.turn
+				self.turn = 3 - self.turn  # change to other player's turn
 				self.moves.append(col - 1)
-				break	
+				return i
 
 	def evaluate(self, player: int):
 		"""
@@ -123,33 +125,94 @@ class Game:
 			result -= i * self.get_n_in_a_row(3 - player, i)
 		return result
 
-	def get_n_in_a_row(self, player, n):
+	def get_n_in_a_row(self, player, n, immediate_return=False):
 		"""Returns the number of n-in-a-rows for the given player."""
+		# result = 0
+		# # Check vertical lines
+		# for column in self.board:	
+		# 	for square in range(len(column) - n + 1):
+		# 		if len(set(column[square:square + n])) == 1 and column[square] == player:
+		# 			result += 1
+
+		# # Check horizontal lines
+		# for row in range(len(self.board) - n + 1):
+		# 	for square in range(len(self.board[row])):
+		# 		if len(set(self.board[row + x][square] for x in range(n))) == 1 and self.board[row][square] == player:
+		# 			result += 1
+					
+		# # Check diagonal lines
+		# for row in range(len(self.board) - n + 1):
+		# 	for square in range(len(self.board[row]) - n + 1):
+		# 		if len(set(self.board[row + x][square + x] for x in range(n))) == 1 and self.board[row][square] == player:
+		# 			result += 1
+		# 	for square in range(n - 1, len(self.board[row])):
+		# 		if len(set(self.board[row + x][square - x] for x in range(n))) == 1 and self.board[row][square] == player:
+		# 			result += 1
+		
+		# return result
 		result = 0
 		# Check vertical lines
 		for column in self.board:	
 			for square in range(len(column) - n + 1):
-				if len(set(column[square:square + n])) == 1 and column[square] == player:
-					result += 1
+				if column[square] == player:
+					for i in range(n):
+						if column[square + i] != column[square]:
+							break
+					else:
+						if immediate_return:
+							return 1
+						result += 1
+
+		for column in self.board:	
+			for square in range(len(column) - n + 1):
+				if column[square] == player:
+					for i in range(n):
+						if column[square + i] != column[square]:
+							break
+					else:
+						if immediate_return:
+							return 1
+						result += 1
+
+    # Check horizontal lines
+		# for row_index in range(len(self.board[0])):	
+		# 	for col_index in range(len(self.board) - n + 1):
+		# 		if self.board[col_index][row_index] == player:
+		# 			for i in range(n):
+		# 				if self.board[col_index][row_index + i] != self.board[col_index][row_index]:
+		# 					break
+		# 			else:
+		# 				if immediate_return:
+		# 					return 1
+		# 				result += 1
 
 		# Check horizontal lines
-		for row in range(len(self.board) - n + 1):
-			for square in range(len(self.board[row])):
-				if len(set(self.board[row + x][square] for x in range(n))) == 1 and self.board[row][square] == player:
-					result += 1
-					
+		# for row in range(len(self.board) - n + 1):
+		# 	for square in range(len(self.board[row])):
+		# 		if len(set(self.board[row + x][square] for x in range(n))) == 1 and self.board[row][square] == player:
+		# 			if immediate_return:
+		# 				return 1
+		# 			result += 1
+
 		# Check diagonal lines
 		for row in range(len(self.board) - n + 1):
 			for square in range(len(self.board[row]) - n + 1):
 				if len(set(self.board[row + x][square + x] for x in range(n))) == 1 and self.board[row][square] == player:
+					if immediate_return:
+						return 1
 					result += 1
+
 			for square in range(n - 1, len(self.board[row])):
 				if len(set(self.board[row + x][square - x] for x in range(n))) == 1 and self.board[row][square] == player:
+					if immediate_return:
+						return 1
 					result += 1
-		
+
 		return result
 
-	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool=True, alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")) -> tuple:
+	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool=True,
+		alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")
+	) -> tuple:
 		# previous player won the game
 		if self.has_player_won():
 			return None, self.evaluate(not maximizing)
@@ -163,9 +226,12 @@ class Game:
 		best_move: typing.Union[None, typing.List[int, int]] = None
 
 		for i in self.legal_moves():
-			self.place_move(i)
-			_, evaluation = self.minimax_algorithm(depth - 1, player, not maximizing, alpha, beta)
-			self.undo()
+			row = self.place_move(i)
+			_, evaluation = self.minimax_algorithm(
+				depth - 1, player, not maximizing,
+				alpha, beta
+			)
+			self.undo(row)
 
 			# update the evaluation and best move if needed
 			if (maximizing and evaluation > best_evaluation) or (not maximizing and evaluation < best_evaluation):
