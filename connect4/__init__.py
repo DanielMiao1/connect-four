@@ -7,7 +7,7 @@ VALUES = ["    ", "\033[31m ◉  \033[0m", "\033[93m ◉  \033[0m"]
 
 class Game:
 	"""The grid."""
-	def __init__(self, size: typing.List[int], connect_size: int):
+	def __init__(self, size: typing.Union[typing.List[int], typing.Tuple[int]] = (6, 7), connect_size: int = 4):
 		self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
 		self.moves: typing.List[typing.Tuple[int, int]] = []  # List of moves made
 		# self.board = [[random.randint(0, 2) for _ in range(size[1])] for _ in range(size[0])]  # Populate the board with random values
@@ -61,7 +61,11 @@ class Game:
 
 	def has_player_won(self):
 		"""Returns True if the player has won, False otherwise."""
-		return any([self.get_n_in_a_row(player_number, self.connect_size) for player_number in [1, 2]])
+		if self.get_n_in_a_row(1, self.connect_size):
+			return 1
+		if self.get_n_in_a_row(2, self.connect_size):
+			return 2
+		return 0
 
 	def is_game_over(self):
 		"""Returns True if the game is over, False otherwise."""
@@ -96,7 +100,7 @@ class Game:
 		self.moves.pop()  # Remove the last move
 	
 	def place_move(self, col):
-		"""Finds the first empty square in the column and places the move there."""
+		"""Finds the first empty square in the column and places the move there. `col` is a non-zero number detonating the column."""
 		for i in range(len(self.board[col - 1]) - 1, 0, -1):  # Iterate through rows of the specified column in reverse order
 			if not self.board[col - 1][i]:
 				self.board[col - 1][i] = self.turn
@@ -109,10 +113,10 @@ class Game:
 		Returns the evaluation of the position
 		Positive values indicate advantage for given player
 		"""
-		return 0
+		# return 0
 		# if player 1 won, return inf, if player 2 won, return -inf
 		if self.has_player_won():
-			return (self.turn == player) * float("inf")
+			return ((-1) ** player) * float("inf")
 		if self.is_tie():
 			return 0
 		result = 0
@@ -123,6 +127,7 @@ class Game:
 
 	def get_n_in_a_row(self, player, n, immediate_return=False):
 		"""Returns the number of n-in-a-rows for the given player."""
+		# TODO: (maybe) add a variable for occupied columns
 		result = 0
 		# Check vertical lines
 		for column in self.board:
@@ -135,7 +140,7 @@ class Game:
 						return 1
 					result += 1
 	
-    # Check horizontal lines
+		# Check horizontal lines
 		for row_index in range(self.size[0] - n + 1):
 			for col_index in range(self.size[1]):
 				for i in self.board[col_index][row_index:row_index + n]:
@@ -173,12 +178,13 @@ class Game:
 		# alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")
 	) -> tuple:
 		# previous player won the game
-		if self.has_player_won():
-			return None, self.evaluate(not maximizing)
+		has_player_won = self.has_player_won()
+		if has_player_won:
+			return ((-1) ** has_player_won) * float("inf")
 		elif self.is_tie():
 			return None, 0
 		elif depth == 0:
-			return None, self.evaluate(maximizing)
+			return None, self.evaluate(maximizing + 1)
 
 		best_evaluation: typing.Union[int, float] = float("-inf") if maximizing else float("inf")
 		best_move: typing.Optional[int] = None
