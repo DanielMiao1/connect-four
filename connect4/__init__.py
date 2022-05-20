@@ -2,7 +2,6 @@
 
 import typing
 
-
 VALUES = ["    ", "\033[31m ◉  \033[0m", "\033[93m ◉  \033[0m"]
 
 
@@ -10,7 +9,7 @@ class Game:
 	"""The grid."""
 	def __init__(self, size: typing.List[int], connect_size: int):
 		self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
-		self.moves = []  # List of moves made
+		self.moves: typing.List[typing.Tuple[int, int]] = []  # List of moves made
 		# self.board = [[random.randint(0, 2) for _ in range(size[1])] for _ in range(size[0])]  # Populate the board with random values
 		self.size = size
 		self.turn = 1  # 1 for red, 2 for yellow
@@ -72,11 +71,13 @@ class Game:
 	
 	def is_tie(self):
 		"""Returns True if the game is tied, False otherwise."""
-		for column in self.board:
-			for square in column:
-				if not square:
-					return False
-		return True
+		if len(self.moves) == self.size[0] * self.size[1]:
+			for column in self.board:
+				for square in column:
+					if not square:
+						return False
+			return True
+		return False
 
 	def legal_moves(self):
 		"""Returns a list of all possible moves in the current position."""
@@ -89,20 +90,18 @@ class Game:
 	def undo(self):
 		if not self.moves:
 			return
-		for square_index in range(len(self.board[self.moves[-1]])):
-			if self.board[self.moves[-1]][square_index]:
-				self.board[self.moves[-1]][square_index] = 0
-				break
-		self.turn = 3 - self.turn
-		self.moves.pop()
+		last_move_column, last_move_row = self.moves[-1]
+		self.board[last_move_column][last_move_row] = 0
+		self.turn = 3 - self.turn  # Switch turn
+		self.moves.pop()  # Remove the last move
 	
 	def place_move(self, col):
 		"""Finds the first empty square in the column and places the move there."""
-		for i in range(len(self.board[col - 1]) - 1, 0, -1):
+		for i in range(len(self.board[col - 1]) - 1, 0, -1):  # Iterate through rows of the specified column in reverse order
 			if not self.board[col - 1][i]:
 				self.board[col - 1][i] = self.turn
 				self.turn = 3 - self.turn  # change to other player's turn
-				self.moves.append(col - 1)
+				self.moves.append([col - 1, i])
 				return i
 
 	def evaluate(self, player: int):
@@ -110,7 +109,7 @@ class Game:
 		Returns the evaluation of the position
 		Positive values indicate advantage for given player
 		"""
-		# return 0
+		return 0
 		# if player 1 won, return inf, if player 2 won, return -inf
 		if self.has_player_won():
 			return (self.turn == player) * float("inf")
@@ -124,29 +123,6 @@ class Game:
 
 	def get_n_in_a_row(self, player, n, immediate_return=False):
 		"""Returns the number of n-in-a-rows for the given player."""
-		# result = 0
-		# # Check vertical lines
-		# for column in self.board:
-		# 	for square in range(len(column) - n + 1):
-		# 		if len(set(column[square:square + n])) == 1 and column[square] == player:
-		# 			result += 1
-		#
-		# # Check horizontal lines
-		# for row in range(len(self.board) - n + 1):
-		# 	for square in range(len(self.board[row])):
-		# 		if len(set(self.board[row + x][square] for x in range(n))) == 1 and self.board[row][square] == player:
-		# 			result += 1
-		#
-		# # Check diagonal lines
-		# for row in range(len(self.board) - n + 1):
-		# 	for square in range(len(self.board[row]) - n + 1):
-		# 		if len(set(self.board[row + x][square + x] for x in range(n))) == 1 and self.board[row][square] == player:
-		# 			result += 1
-		# 	for square in range(n - 1, len(self.board[row])):
-		# 		if len(set(self.board[row + x][square - x] for x in range(n))) == 1 and self.board[row][square] == player:
-		# 			result += 1
-		#
-		# return result
 		result = 0
 		# Check vertical lines
 		for column in self.board:
@@ -159,18 +135,6 @@ class Game:
 						return 1
 					result += 1
 	
-		# # old vertical line-checker
-		# for column in self.board:
-		# 	for square in range(len(column) - n + 1):
-		# 		if column[square] == player:
-		# 			for i in range(n):
-		# 				if column[square + i] != column[square]:
-		# 					break
-		# 			else:
-		# 				if immediate_return:
-		# 					return 1
-		# 				result += 1
-		#
     # Check horizontal lines
 		for row_index in range(self.size[0] - n + 1):
 			for col_index in range(self.size[1]):
@@ -203,19 +167,11 @@ class Game:
 					result += 1
 		
 		return result
-	
-		# # Check diagonal lines
-		# for row in range(len(self.board) - n + 1):
-		# 	for square in range(len(self.board[row]) - n + 1):
-		# 		if len(set(self.board[row + x][square + x] for x in range(n))) == 1 and self.board[row][square] == player:
-		# 			result += 1
-		# 	for square in range(n - 1, len(self.board[row])):
-		# 		if len(set(self.board[row + x][square - x] for x in range(n))) == 1 and self.board[row][square] == player:
-		# 			result += 1
-		#
-		# return result
 
-	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool=True, alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")) -> tuple:
+	def minimax_algorithm(
+		self, depth: typing.Union[int, float], player: int, maximizing: bool=True,
+		# alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")
+	) -> tuple:
 		# previous player won the game
 		if self.has_player_won():
 			return None, self.evaluate(not maximizing)
@@ -228,21 +184,31 @@ class Game:
 		best_move: typing.Optional[int] = None
 
 		for i in self.legal_moves():
+			starting_board = self.visualize_board()
 			self.place_move(i)
-			_, evaluation = self.minimax_algorithm(depth - 1, player, not maximizing, alpha, beta)
+			_, evaluation = self.minimax_algorithm(
+				depth - 1, player, not maximizing,
+				# alpha, beta
+			)
 			self.undo()
+			if starting_board != self.visualize_board():
+				print(i)
+				print(depth)
+				print(starting_board)
+				print(self.visualize_board())
+				exit()
 
 			# update the evaluation and best move if needed
 			if (maximizing and evaluation > best_evaluation) or (not maximizing and evaluation < best_evaluation):
 				best_evaluation = evaluation
 				best_move = i
-			if maximizing:
-				if evaluation > beta:
-					continue
-				alpha = max(evaluation, alpha)
-			else:
-				if evaluation < alpha:
-					continue
-				beta = min(evaluation, beta)
+			# if maximizing:
+			# 	if evaluation > beta:
+			# 		continue
+			# 	alpha = max(evaluation, alpha)
+			# else:
+			# 	if evaluation < alpha:
+			# 		continue
+			# 	beta = min(evaluation, beta)
 
 		return best_move, best_evaluation

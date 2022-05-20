@@ -6,11 +6,13 @@ import time
 
 from typing import *
 
-from board import Board
+# from board import Board
+
+# from copy import deepcopy
 
 
 class Player:
-	def __init__(self, color: int, board: Board) -> None:
+	def __init__(self, color: int, board) -> None:
 		self.color = color
 		self.board = board
 
@@ -44,10 +46,15 @@ class HumanPlayer(Player):
 
 class AIPlayer(Player):
 	def get_player_move(self):
-		start = time.time()
-		result = self.board.minimax_algorithm(4, self.color)[0]
-		print(time.time() - start)
-		print(result)
+		# start = time.time()
+		# starting_board = __import__("copy").deepcopy(self.board.board)
+		result = self.board.minimax_algorithm(2, self.color)[0]
+		# print(starting_board == self.board.board)
+    
+		# print(starting_board)
+		# print(self.board.board)
+		# print(time.time() - start)
+		# print(result)
 		# 4.55299186706543 4.525663375854492 4.262247323989868 4.2896504402160645
 		time.sleep(3)
 		if result is None:
