@@ -82,11 +82,10 @@ class Game:
 		"""Returns a list of all possible moves in the current position."""
 		moves = []
 		for column_index in range(len(self.board)):
-			for square in self.board[column_index]:
-				if not square:
-					moves.append(column_index + 1)
+			if not self.board[column_index][0]:
+				moves.append(column_index + 1)
 		return moves
-	
+
 	def undo(self):
 		if not self.moves:
 			return
