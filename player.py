@@ -5,12 +5,11 @@ import random
 import time
 
 from typing import *
-
-from board import Board
+from __future__ import annotations
 
 
 class Player:
-	def __init__(self, color: int, board: Board) -> None:
+	def __init__(self, color: int, board: "Board") -> None:
 		self.color = color
 		self.board = board
 
