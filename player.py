@@ -139,26 +139,26 @@ class AIPlayer(Player):
 60000011111122222233333344444455555566666
 60000011111122222233333344444455555566666
 	'''
-	def minimax(self, depth: int, player: int, maximizing: bool=True) -> tuple:
-		move = None
+	# def minimax(self, depth: int, player: int, maximizing: bool=True) -> tuple:
+	# 	move = None
 
-		if depth == 0:
-			return move, self.board.evaluate()
-		elif self.board.is_game_over():
-			return move, self.board.evaluate()
+	# 	if depth == 0:
+	# 		return move, self.board.evaluate()
+	# 	elif self.board.is_game_over():
+	# 		return move, self.board.evaluate()
 		
-		base = float("-inf") if maximizing else float("inf")
-		for i in self.board.legal_moves():
-			# 
-			print(i, end="")
-			self.board.place_move(i)
-			_, evaluation = self.minimax(depth - 1, player, not maximizing)
-			self.board.undo()
-			if (maximizing and base < evaluation) or (not maximizing and base > evaluation):
-				base = evaluation
-				move = i
-		print()
-		return move, base
+	# 	base = float("-inf") if maximizing else float("inf")
+	# 	for i in self.board.legal_moves():
+	# 		# 
+	# 		print(i, end="")
+	# 		self.board.place_move(i)
+	# 		_, evaluation = self.minimax(depth - 1, player, not maximizing)
+	# 		self.board.undo()
+	# 		if (maximizing and base < evaluation) or (not maximizing and base > evaluation):
+	# 			base = evaluation
+	# 			move = i
+	# 	print()
+	# 	return move, base
 
 # if it's the maximizing player's turn, then out possible choices for minimizing player,
 # if current move for minimizing player > beta, then don't consider that move

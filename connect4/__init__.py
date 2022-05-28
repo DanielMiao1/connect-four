@@ -98,12 +98,12 @@ class Game:
 	
 	def place_move(self, col):
 		"""Finds the first empty square in the column and places the move there."""
-		for i in range(len(self.board[col - 1]))[::-1]:
+		for i in range(len(self.board[col - 1]) - 1, 0, -1):
 			if not self.board[col - 1][i]:
 				self.board[col - 1][i] = self.turn
-				self.turn = 3 - self.turn
+				self.turn = 3 - self.turn  # change to other player's turn
 				self.moves.append(col - 1)
-				break	
+				return i
 
 	def evaluate(self, player: int):
 		"""
@@ -171,7 +171,7 @@ class Game:
 			return None, self.evaluate(maximizing)
 
 		best_evaluation: typing.Union[int, float] = float("-inf") if maximizing else float("inf")
-		best_move: typing.Union[None, typing.List[int, int]] = None
+		best_move: typing.Optional[int] = None
 
 		for i in self.legal_moves():
 			self.place_move(i)
