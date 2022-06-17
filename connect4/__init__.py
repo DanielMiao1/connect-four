@@ -11,7 +11,6 @@ class Game:
 	def __init__(self, size: typing.Iterable[int] = (6, 7), connect_size: int = 4):
 		self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
 		self.moves = []  # List of moves made
-		# self.board = [[random.randint(0, 2) for _ in range(size[1])] for _ in range(size[0])]  # Populate the board with random values
 		self.size = size
 		self.turn = 1  # 1 for red, 2 for yellow
 		self.connect_size = connect_size
@@ -108,10 +107,8 @@ class Game:
 	def evaluate(self, player: int):
 		"""
 		Returns the evaluation of the position
-		Positive values indicate advantage for given player
+		Positive values indicate an advantage for given player
 		"""
-		# return 0
-		# if player 1 won, return inf, if player 2 won, return -inf
 		if self.has_player_won():
 			return -((-1) ** (self.turn == player)) * float("inf")
 		if self.is_tie():
@@ -162,8 +159,24 @@ class Game:
 		return result
 
 	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool=True, alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")) -> tuple:
-		# previous player won the game
-		if self.has_player_won():
+		"""
+		Implementation of the Minimax Tree Search algorithm
+		if it's the maximizing player's turn, then out possible choices for minimizing player,
+		if current move for minimizing player > beta, then don't consider that move
+		if it's the minimizing player's turn, then out possible choices for maximizing player,
+		if current move for maximizing player < alpha, then don't consider that move
+		
+		for each of the possible moves:
+		maximizing player:
+		set alpha variable to highest scoring move so far
+
+		minimizing player:
+		set beta variable to lowest scoring move so far
+			inf if red won, negative inf if yellow won
+
+			3 * (# of 3 red in a row) 2 * (# of 2 red in a row) - [3 * (# of 3 yellow in a row) 2 * (# of 2 yellow in a row)]
+		"""
+		if self.has_player_won():  # If the previous player won the game
 			return None, self.evaluate(not maximizing)
 		elif self.is_tie():
 			return None, 0
@@ -178,10 +191,11 @@ class Game:
 			_, evaluation = self.minimax_algorithm(depth - 1, player, not maximizing, alpha, beta)
 			self.undo()
 
-			# update the evaluation and best move if needed
+			# Update the evaluation and best move if needed
 			if (maximizing and evaluation > best_evaluation) or (not maximizing and evaluation < best_evaluation):
 				best_evaluation = evaluation
 				best_move = i
+			# Update alpha and beta
 			if maximizing:
 				if evaluation > beta:
 					continue
