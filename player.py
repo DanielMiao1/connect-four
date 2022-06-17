@@ -45,9 +45,7 @@ class HumanPlayer(Player):
 class AIPlayer(Player):
 	def get_player_move(self):
 		start = time.time()
-		result = self.board.minimax_algorithm(4, self.color)[0]
-		print(time.time() - start)
-		print(result)
+		result = self.board.minimax_algorithm(5, self.color)[0]
 		# 4.55299186706543 4.525663375854492 4.262247323989868 4.2896504402160645
 		time.sleep(3)
 		if result is None:

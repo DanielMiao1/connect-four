@@ -113,7 +113,7 @@ class Game:
 		# return 0
 		# if player 1 won, return inf, if player 2 won, return -inf
 		if self.has_player_won():
-			return (self.turn == player) * float("inf")
+			return -((-1) ** (self.turn == player)) * float("inf")
 		if self.is_tie():
 			return 0
 		result = 0
