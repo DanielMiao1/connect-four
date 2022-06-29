@@ -49,7 +49,6 @@ class Game:
 				return prompt_mode(True)
 
 		mode = prompt_mode()
-		print(mode)
 		if mode == PLAYER.Computer:
 			self.players.append(AIPlayer(2, self.board))
 		elif mode == PLAYER.Human:
@@ -79,7 +78,6 @@ class Game:
 			move = self.players[self.board.turn - 1].get_player_move()
 			while not move:
 				system("clear")
-				print(move)
 				print(self.board.visualize_board())
 				print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
 				move = self.players[self.board.turn - 1].get_player_move(True)
