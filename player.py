@@ -40,7 +40,7 @@ class HumanPlayer(Player):
 
 class AIPlayer(Player):
 	def get_player_move(self):
-		result = self.board.minimax_algorithm(4, self.color)[0]
+		result = self.board.minimax_algorithm(6, self.color)[0]
 		if result is None:
 			return random.choice(self.board.legal_moves())
 		return result
