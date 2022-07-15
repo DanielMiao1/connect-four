@@ -8,12 +8,25 @@ VALUES = ["    ", "\033[31m ◉  \033[0m", "\033[93m ◉  \033[0m"]
 
 class Game:
 	"""The grid."""
-	def __init__(self, size: typing.Iterable[int] = (6, 7), connect_size: int = 4):
-		self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
+	def __init__(
+			self,
+			size: typing.Iterable[int] = (6, 7),
+			connect_size: int = 4,
+			board: typing.Optional[typing.List[typing.List]] = None,
+			turn: int = 1,
+			winner: typing.Optional[int] = None,
+			terminal: bool = False
+	):
+		if board is None:
+			self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
+		else:
+			self.board = board
 		self.moves = []  # List of moves made
 		self.size = size
-		self.turn = 1  # 1 for red, 2 for yellow
+		self.turn = turn  # 1 for red, 2 for yellow
 		self.connect_size = connect_size
+		self.winner = winner
+		self.terminal = terminal
 		
 	def visualize_board(self):
 		"""Returns a formatted string representing the board."""
@@ -60,8 +73,10 @@ class Game:
 		return result
 
 	def has_player_won(self):
-		"""Returns True if the player has won, False otherwise."""
-		return any([self.get_n_in_a_row(player_number, self.connect_size) for player_number in [1, 2]])
+		"""Returns the player's color if a player has won, False otherwise."""
+		for color in [1, 2]:
+			if self.get_n_in_a_row(color, self.connect_size):
+				return color
 
 	def is_game_over(self):
 		"""Returns True if the game is over, False otherwise."""
@@ -184,7 +199,7 @@ class Game:
 			return None, self.evaluate(maximizing)
 
 		best_evaluation: typing.Union[int, float] = float("-inf") if maximizing else float("inf")
-		best_move: typing.Union[None, typing.List[int, int]] = None
+		best_move: typing.Optional[int] = None
 
 		for i in self.legal_moves():
 			self.place_move(i)
