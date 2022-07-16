@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import random
+
 import time
+
 
 
 class Player:
@@ -12,7 +15,7 @@ class Player:
 			column = input(f"[%s] > " % ("\033[91mInvalid input\033[0m" if invalid else "Enter your move"))
 			if column.lower().startswith("row"):
 				# row player_number n
-				print(self.board.board.get_n_in_a_row(int(column.split()[1]), int(column.split()[2])))
+				print(self.board.get_n_in_a_row(int(column.split()[1]), int(column.split()[2])))
 				time.sleep(3)
 				return False
 			if column.startswith("e"):
@@ -25,7 +28,7 @@ class Player:
 		except ValueError:
 			print("\033[91mInvalid input\033[0m")
 			return False
-		if column in self.board.board.legal_moves(self.board.board):
+		if column in self.board.legal_moves():
 			return column
 		print("\033[91mInvalid input\033[0m")
 		return False
@@ -37,6 +40,7 @@ class HumanPlayer(Player):
 
 class AIPlayer(Player):
 	def get_player_move(self):
-		for _ in range(2000):
-			self.board.tree.rollout(self.board.board)
-		return self.board.tree.choose(self.board.board)
+		result = self.board.minimax_algorithm(4, self.color)[0]
+		if result is None:
+			return random.choice(self.board.legal_moves())
+		return result

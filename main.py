@@ -6,7 +6,6 @@ Supports any board configuration within the range 2x2-99x99. However, larger boa
 """
 
 from connect4 import Game as Connect4
-from connect4.algorithms import MonteCarlo
 from player import HumanPlayer, AIPlayer
 from settings import board_size, connect_length, settings_menu
 
@@ -24,8 +23,7 @@ class PLAYER:
 class Game:
 	def __init__(self, size: List[int]=board_size, connect_size: int=connect_length):
 		self.board: Connect4 = Connect4(size, connect_size)
-		self.tree = MonteCarlo()
-		self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self)]
+		self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self.board)]
 		self.size: List[int] = size
 		self.connect_size: int = connect_size
 
@@ -52,9 +50,9 @@ class Game:
 
 		mode = prompt_mode()
 		if mode == PLAYER.Computer:
-			self.players.append(AIPlayer(2, self))
+			self.players.append(AIPlayer(2, self.board))
 		elif mode == PLAYER.Human:
-			self.players.append(HumanPlayer(2, self))
+			self.players.append(HumanPlayer(2, self.board))
 		elif mode == "h":
 			help_menu.help_menu()
 			return self.start()
@@ -73,23 +71,23 @@ class Game:
 				self.connect_size: int = connect_length
 			return self.start()
 
-		while not self.board.has_player_won(self.board) and not self.board.is_tie(self.board):
+		while not self.board.is_game_over():
 			system("clear")
-			print(self.board.visualize_board(self.board))
+			print(self.board.visualize_board())
 			print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
 			move = self.players[self.board.turn - 1].get_player_move()
 			while not move:
 				system("clear")
-				print(self.board.visualize_board(self.board))
+				print(self.board.visualize_board())
 				print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
 				move = self.players[self.board.turn - 1].get_player_move(True)
-			if isinstance(move, int):
-				self.board = self.board.make_move(self.board, move)
-			else:
-				self.board = move
+			if move == "u":
+				self.board.undo()
+				continue
+			self.board.place_move(move)
 		system("clear")
-		print(self.board.visualize_board(self.board))
-		if self.board.is_tie(self.board):
+		print(self.board.visualize_board())
+		if self.board.is_tie():
 			print("The game is tied")
 		else:
 			print(f"{('Yellow', 'Red')[self.board.turn - 1]} wins")
