@@ -2,26 +2,28 @@
 
 import typing
 
-
 VALUES = ["    ", "\033[31m ◉  \033[0m", "\033[93m ◉  \033[0m"]
 
 
 class Game:
 	"""The grid."""
+
 	def __init__(self, size: typing.Iterable[int] = (6, 7), connect_size: int = 4):
-		self.board = [[0 for _ in range(size[0])] for _ in range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
+		self.board = [[0 for _ in range(size[0])] for _ in
+		              range(size[1])]  # Possible values in board: 0 (empty), 1 (red), or 2 (yellow)
 		self.moves = []  # List of moves made
 		self.size = size
 		self.turn = 1  # 1 for red, 2 for yellow
 		self.connect_size = connect_size
-		
+
 	def visualize_board(self):
 		"""Returns a formatted string representing the board."""
 		board_rows = [[] for _ in range(self.size[0])]
 		for col in range(len(self.board)):
 			for square in range(len(self.board[col])):
 				board_rows[square].append(self.board[col][square])
-		numbers_y, numbers_x = list(reversed(list(map(lambda x: x + 1, range(self.size[0]))))), list(reversed(list(map(lambda x: x + 1, range(self.size[1])))))
+		numbers_y, numbers_x = list(reversed(list(map(lambda x: x + 1, range(self.size[0]))))), list(
+			reversed(list(map(lambda x: x + 1, range(self.size[1])))))
 		max_length_y, max_length_x = len(str(numbers_y[0])), len(str(numbers_x[0]))
 		# The top border (e.g. ┌———┬————┬————┬————┬————┐)
 		result = "┌——" + ("—" * max_length_y)
@@ -68,7 +70,7 @@ class Game:
 		if self.has_player_won():
 			return True
 		return self.is_tie()
-	
+
 	def is_tie(self):
 		"""Returns True if the game is tied, False otherwise."""
 		for column in self.board:
@@ -94,7 +96,7 @@ class Game:
 				break
 		self.turn = 3 - self.turn
 		self.moves.pop()
-	
+
 	def place_move(self, col):
 		"""Finds the first empty square in the column and places the move there."""
 		for i in range(len(self.board[col - 1]))[::-1]:
@@ -102,7 +104,7 @@ class Game:
 				self.board[col - 1][i] = self.turn
 				self.turn = 3 - self.turn
 				self.moves.append(col - 1)
-				break	
+				break
 
 	def evaluate(self, player: int):
 		"""
@@ -125,13 +127,14 @@ class Game:
 		result = 0
 		# Check vertical lines
 		for column in self.board:
-			for square in range(0, self.size[0] - n + 1):  # step parameter of range function should be (n - 1) (optimization)?
+			for square in range(0,
+			                    self.size[0] - n + 1):  # step parameter of range function should be (n - 1) (optimization)?
 				for i in column[square:square + n]:
 					if i != player:
 						break
 				else:
 					result += 1
-	
+
 		# Check horizontal lines
 		for col_index in range(self.size[1] - n + 1):
 			for square_index in range(self.size[0]):
@@ -149,7 +152,7 @@ class Game:
 						break
 				else:
 					result += 1
-	
+
 			for row_index in range(n - 1, self.size[0]):
 				for x in range(n):
 					if self.board[column_index + x][row_index - x] != player:
@@ -158,22 +161,22 @@ class Game:
 					result += 1
 		return result
 
-	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool=True, alpha: typing.Union[float, int] = float("-inf"), beta: typing.Union[float, int] = float("inf")) -> tuple:
+	def minimax_algorithm(self, depth: typing.Union[int, float], player: int, maximizing: bool = True,
+	                      alpha: typing.Union[float, int] = float("-inf"),
+	                      beta: typing.Union[float, int] = float("inf")) -> tuple:
 		"""
 		Implementation of the Minimax Tree Search algorithm
 		if it's the maximizing player's turn, then out possible choices for minimizing player,
 		if current move for minimizing player > beta, then don't consider that move
 		if it's the minimizing player's turn, then out possible choices for maximizing player,
 		if current move for maximizing player < alpha, then don't consider that move
-		
+
 		for each of the possible moves:
 		maximizing player:
 		set alpha variable to highest scoring move so far
-
 		minimizing player:
 		set beta variable to lowest scoring move so far
 			inf if red won, negative inf if yellow won
-
 			3 * (# of 3 red in a row) 2 * (# of 2 red in a row) - [3 * (# of 3 yellow in a row) 2 * (# of 2 yellow in a row)]
 		"""
 		if self.has_player_won():  # If the previous player won the game

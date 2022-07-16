@@ -21,7 +21,7 @@ class PLAYER:
 
 
 class Game:
-	def __init__(self, size: List[int]=board_size, connect_size: int=connect_length):
+	def __init__(self, size: List[int] = board_size, connect_size: int = connect_length):
 		self.board: Connect4 = Connect4(size, connect_size)
 		self.players: List[Union[HumanPlayer, AIPlayer]] = [HumanPlayer(1, self.board)]
 		self.size: List[int] = size
@@ -35,8 +35,9 @@ class Game:
 \033[96m_  /     _  __ \__  __ \__  __ \_  _ \_  ___/_  __/    __  /_    _  __ \_  / / /__  ___/
 \033[34m/ /___   / /_/ /_  / / /_  / / //  __// /__  / /_      _  __/    / /_/ // /_/ / _  /
 \033[96m\____/   \____/ /_/ /_/ /_/ /_/ \___/ \___/  \__/      /_/       \____/ \____/  /_/\033[0m""")  # speed
-			
-			result = input(f"\nEnter the mode ('f' to play with a friend, or 'c' to play against the computer), or 'h' for the help menu\n\033[91m{'[Invalid input] ' if invalid else ''}\033[0m> ")
+
+			result = input(
+				f"\nEnter the mode ('f' to play with a friend, or 'c' to play against the computer), or 'h' for the help menu\n\033[91m{'[Invalid input] ' if invalid else ''}\033[0m> ")
 			if result.lower() in ["c", "computer"]:
 				return PLAYER.Computer
 			elif result.lower() in ["f", "friend"]:
@@ -74,12 +75,14 @@ class Game:
 		while not self.board.is_game_over():
 			system("clear")
 			print(self.board.visualize_board())
-			print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
+			print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (
+			("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
 			move = self.players[self.board.turn - 1].get_player_move()
 			while not move:
 				system("clear")
 				print(self.board.visualize_board())
-				print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
+				print(f"It is player {self.board.turn} (%s{('Red', 'Yellow')[self.board.turn - 1]}%s)'s turn to move" % (
+				("\033[31m", "\033[93m")[self.board.turn - 1], "\033[0m"))
 				move = self.players[self.board.turn - 1].get_player_move(True)
 			if move == "u":
 				self.board.undo()
