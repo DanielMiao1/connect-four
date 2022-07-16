@@ -13,14 +13,13 @@ class MonteCarlo:
 	def make_legal_moves(board):
 		if board.terminal:
 			return set()
-		return {board.make_move(board, i) for i, value in enumerate(board.position) if value is None}
+		return {board.make_move(board, i) for i in board.legal_moves(board)}
 
 	@staticmethod
 	def make_random_move(board):
 		if board.terminal:
 			return None
-		empty_spots = [i for i, value in enumerate(board.position) if value is None]
-		return board.make_move(board, random.choice(empty_spots))
+		return board.make_move(board, random.choice(board.legal_moves(board)))
 
 	@staticmethod
 	def evaluate(board):
