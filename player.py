@@ -40,7 +40,13 @@ class HumanPlayer(Player):
 
 class AIPlayer(Player):
 	def get_player_move(self):
+<<<<<<< HEAD
 		result = self.board.minimax_algorithm(4, self.color)[0]
 		if result is None:
 			return random.choice(self.board.legal_moves())
 		return result
+=======
+		for _ in range(5000):
+			self.board.tree.rollout(self.board.board)
+		return self.board.tree.choose(self.board.board)
+>>>>>>> parent of 689b4ed (patched monte carlo tree search algorithm)
