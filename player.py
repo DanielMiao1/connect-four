@@ -37,6 +37,5 @@ class HumanPlayer(Player):
 
 class AIPlayer(Player):
 	def get_player_move(self):
-		for _ in range(2000):
-			self.board.tree.rollout(self.board.board)
+		self.board.tree.mcts(self.board.board, 2000)
 		return self.board.tree.choose(self.board.board)
