@@ -2,13 +2,17 @@ VALUES = {None: "    ", 1: "\033[31m ◉  \033[0m", 2: "\033[93m ◉  \033[0m"}
 
 
 class Game:
-	def __init__(self, size=(6, 7), connect_size=4, position=None, turn=True, winner=None, terminal=False):
+	def __init__(self, size=(6, 7), connect_size=4, position=None, turn=True, winner=None, terminal=False, moves=None):
 		if position is None:
 			self.position = (((None,) * size[0],) * size[1])
 		else:
 			self.position = position
 		self.turn, self.winner, self.terminal = turn, winner, terminal
 		self.size, self.connect_size = size, connect_size
+		if moves is None:
+			self.moves = tuple()
+		else:
+			self.moves = moves
 
 	@staticmethod
 	def visualize_board(board):
@@ -80,7 +84,7 @@ class Game:
 				winner = Game.has_player_won(Game(position=position))
 				terminal = (winner is not None) or Game.is_tie(Game(position=position))
 				break
-		return Game(position=position, turn=turn, winner=winner, terminal=terminal)
+		return Game(position=position, turn=turn, winner=winner, terminal=terminal, moves=board.moves + (index,))
 
 	@staticmethod
 	def get_n_in_a_row(board, player, n):

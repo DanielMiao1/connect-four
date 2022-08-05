@@ -2,12 +2,21 @@
 import math
 import random
 
+from connect4 import Game
+
 
 class MonteCarlo:
 	def __init__(self):
 		self.outcomes = {}
 		self.visits = {}
 		self.tree = {}
+
+	@staticmethod
+	def play_moves(moves):
+		game = Game()
+		for i in moves:
+			game = game.make_move(game, i)
+		return game
 
 	@staticmethod
 	def make_legal_moves(board):
@@ -28,30 +37,31 @@ class MonteCarlo:
 		return 0.5
 
 	def choose(self, node):
-		if node not in self.tree:
+		if node.moves not in self.tree:
 			return MonteCarlo.make_random_move(node)
 
 		def score(n):
-			if self.visits[n] == 0:
+			if n not in self.visits or self.visits[n] == 0:
 				return float("-inf")
 			return self.outcomes[n] / self.visits[n]
 
-		return max(self.tree[node], key=score)
+		return max(self.tree[node.moves], key=score)
 
 	def rollout(self, node):
 		path = self.select(node)
 		leaf = path[-1]
-		self.expand(leaf)
-		outcome = self.simulate(leaf)
+		leaf_state = MonteCarlo.play_moves(leaf)
+		self.expand(leaf_state)
+		outcome = self.simulate(leaf_state)
 		self.backpropagate(path, outcome)
 
 	def select(self, node, path=None):
 		if path is None:
 			path = []
-		path.append(node)
-		if node not in self.tree or not self.tree[node]:
+		path.append(node.moves)
+		if node.moves not in self.tree or not self.tree[node.moves]:
 			return path
-		unexplored = self.tree[node] - self.tree.keys()
+		unexplored = self.tree[node.moves] - self.tree.keys()
 		if unexplored:
 			path.append(unexplored.pop())
 			return path
@@ -59,7 +69,7 @@ class MonteCarlo:
 
 	def expand(self, node):
 		if node not in self.tree:
-			self.tree[node] = MonteCarlo.make_legal_moves(node)
+			self.tree[node.moves] = [i.moves for i in MonteCarlo.make_legal_moves(node)]
 
 	@staticmethod
 	def simulate(node, invert=True):
@@ -83,5 +93,5 @@ class MonteCarlo:
 			outcome = 1 - outcome
 
 	def uct(self, node):
-		log = math.log(self.visits[node])
-		return max(self.tree[node], key=lambda n: (self.outcomes[n] / self.visits[n]) + (2 * math.sqrt(log / self.visits[n])))
+		log_visits = math.log(self.visits[node.moves])
+		return node.make_move(node, max(self.tree[node.moves], key=lambda n: (self.outcomes[n] / self.visits[n]) + (2 * math.sqrt(log_visits / self.visits[n])))[-1])
