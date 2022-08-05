@@ -7,8 +7,7 @@ import connect4.algorithms
 
 
 algorithm_test = 1
-minimax_test = 3
-random_test = 5
+random_test = 2
 level = 1500
 threads = 1000
 
